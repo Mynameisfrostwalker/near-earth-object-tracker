@@ -11,7 +11,8 @@ const config: Configuration = {
   mode: 'development',
   entry: {
     index: './src/scripts/index.ts',
-    render: './src/scripts/render.ts'
+    render: './src/scripts/render.ts',
+    fetchData: './src/scripts/fetchData.ts'
   },
   module: {
     rules: [

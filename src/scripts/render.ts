@@ -86,6 +86,8 @@ const animate = (
   window.requestAnimationFrame(render);
 };
 
+const createEarth = () => {};
+
 const init = () => {
   const canvas = document.querySelector("#c");
 
