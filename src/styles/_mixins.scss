@@ -1,0 +1,93 @@
+@mixin size($width, $height: $width, $min: true) {
+    @if($min) {
+        min-width: $width;
+        min-height: $height;
+    } @else {
+        width: $width;
+        height: $height;
+    }
+}
+
+@mixin box-control($margin, $padding: $margin, $border: null, $border-radius: null) {
+    margin: $margin;
+    padding: $padding;
+    border: $border;
+    border-radius: $border-radius;
+}
+
+@mixin flex($direction: row, $align-items: flex-start, $justify-content: flex-start) {
+    display: flex;
+    flex-direction: $direction;
+    align-items: $align-items;
+    justify-content: $justify-content;
+};
+
+@mixin grid($columns, $rows: null, $gap: null) {
+    display: grid;
+    grid-template-columns: $columns;
+    grid-template-rows: $rows;
+    gap: $gap;
+}
+
+@mixin list-reset {
+    @include box-control(0);
+    list-style-type: none;
+}
+
+@mixin font($size, $weight: 500) {
+    font-size: $size;
+    font-weight: $weight;
+}
+
+@mixin color($color, $bgcolor) {
+    color: $color;
+    background-color: $bgcolor;
+}
+
+@mixin transition($property, $time, $value, $function, $delay, $element, $element2: null) {
+    #{$element} {
+        transition: $property $time $function $delay;
+        @if($element2 == null) {
+            #{$property}: $value;
+        }
+    };
+
+    @if($element2) {
+        #{$element2} {
+            #{$property}: $value;
+        }
+    }
+}
+
+@mixin position($position, $TOrB: null, $value1: null, $LOrR: null, $value2: null) {
+    position: $position;
+    @if ($TOrB == "T") {
+        top: $value1;
+    } @else if ($TOrB == "B") {
+        bottom: $value1;
+    }
+
+    @if($LOrR == "L") {
+        left: $value2
+    } @else if ($LOrR == "R") {
+        right: $value2;
+    }
+}
+
+@mixin label-as-placeholder {
+    @include position(relative);
+
+    input ~ label, input ~ label {
+        @include position(absolute, "T", 2.5px, "L", 5px);
+    }
+    
+    input:not(:placeholder-shown) ~ label, 
+    input:focus ~ label {
+        z-index: -1;
+    }
+    
+}
+
+@mixin box-shadow($x, $y, $blur, $spread, $color) {
+    box-shadow: $x $y $blur $spread $color;
+}
