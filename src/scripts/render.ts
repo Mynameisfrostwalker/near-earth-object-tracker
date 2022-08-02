@@ -1,9 +1,12 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GUI } from "lil-gui";
 import galaxy from "../assets/galaxy.png";
 import earthmap from "../assets/earthmap1k.jpg";
 import earthbump from "../assets/earthbump.jpg";
 import earthcloud from "../assets/earthCloud.png";
+import moon from "../assets/moon.jpg";
+import moonbump from "../assets/moonbump.jpg";
 
 const objects: THREE.Mesh[] = [];
 
@@ -27,7 +30,7 @@ const createCamera = (scene: THREE.Scene) => {
   const far = 100;
 
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.z = 5;
+  camera.position.set(0, 0, 5);
 
   scene.add(camera);
 
@@ -36,10 +39,11 @@ const createCamera = (scene: THREE.Scene) => {
 
 const createOrbitControls = (
   camera: THREE.PerspectiveCamera,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
+  center: THREE.Vector3
 ) => {
   const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, 0, 0);
+  controls.target.copy(center).add(new THREE.Vector3(-1, -1, 0));
   controls.update();
 };
 
@@ -95,8 +99,11 @@ const animate = (
   window.requestAnimationFrame(render);
 };
 
-const createEarthOrbit = (scene: THREE.Scene) => {
+const createEarthOrbit = (scene: THREE.Scene, center: THREE.Vector3) => {
   const earthOrbit = new THREE.Object3D();
+  earthOrbit.position.set(center.x, center.y, center.z);
+  const myAxis = new THREE.Vector3(1, -1, 0);
+  earthOrbit.rotateOnAxis(myAxis, THREE.MathUtils.degToRad(23.5));
   scene.add(earthOrbit);
   return earthOrbit;
 };
@@ -115,7 +122,7 @@ const createEarth = (base: THREE.Object3D) => {
   const material = new THREE.MeshPhongMaterial({
     map: texture,
     bumpMap: bumpTexture,
-    bumpScale: 0.3,
+    bumpScale: 0.6,
   });
   const cloudMaterial = new THREE.MeshPhongMaterial({
     map: cloudTexture,
@@ -141,21 +148,43 @@ const createEarth = (base: THREE.Object3D) => {
 
 const createMoonOrbit = (earthOrbit: THREE.Object3D) => {
   const moonOrbit = new THREE.Object3D();
-  earthOrbit.add(earthOrbit);
+  moonOrbit.position.x = 2;
+  earthOrbit.add(moonOrbit);
   return moonOrbit;
+};
+
+const createMoon = (moonOrbit: THREE.Object3D) => {
+  const geometry = new THREE.SphereGeometry(0.43);
+
+  const loader = new THREE.TextureLoader();
+  const moonTexture = loader.load(moon);
+  const bumpTexture = loader.load(moonbump);
+  const material = new THREE.MeshPhongMaterial({
+    map: moonTexture,
+    bumpMap: bumpTexture,
+    bumpScale: 0.2,
+  });
+
+  const moonMesh = new THREE.Mesh(geometry, material);
+
+  moonOrbit.add(moonMesh);
+  objects.push(moonMesh);
 };
 
 const init = () => {
   const canvas = document.querySelector("#c");
+  const center = new THREE.Vector3(1, 1, 0);
 
   if (canvas instanceof HTMLCanvasElement) {
     const renderer = new THREE.WebGLRenderer({ canvas });
     const scene = createScene(renderer);
     const camera = createCamera(scene);
-    createOrbitControls(camera, canvas);
+    createOrbitControls(camera, canvas, center);
     createLighting(scene);
-    const earthOrbit = createEarthOrbit(scene);
+    const earthOrbit = createEarthOrbit(scene, center);
     createEarth(earthOrbit);
+    const moonOrbit = createMoonOrbit(earthOrbit);
+    createMoon(moonOrbit);
     renderer.render(scene, camera);
     animate(renderer, scene, camera);
   }
