@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { InteractionManager } from "three.interactive";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import type { DataSorter } from "./fetchData";
 import { baseLog, randomPosition } from "./utilities";
@@ -9,26 +10,31 @@ import earthcloud from "../assets/earthCloud.png";
 import moon from "../assets/moon.jpg";
 import moonbump from "../assets/moonbump.jpg";
 import asteroidImg from "../assets/asteroid.jpg";
+import asteroidBump from "../assets/asteroidBump.jpg";
 
 interface Animations {
+  animate: boolean;
   cloud: THREE.Object3D[];
   earth: THREE.Object3D[];
   asteroids: THREE.Object3D[];
   moon: THREE.Object3D[];
   lunarEarth: THREE.Object3D[];
   earthOrbit: THREE.Object3D[];
+  cameras: THREE.PerspectiveCamera[];
+  functions: (() => void)[];
 }
 
 const animations: Animations = {
+  animate: true,
   cloud: [],
   earth: [],
   asteroids: [],
   moon: [],
   lunarEarth: [],
   earthOrbit: [],
+  cameras: [],
+  functions: [],
 };
-
-const cameras: THREE.PerspectiveCamera[] = [];
 
 const createScene = (renderer: THREE.WebGLRenderer) => {
   const scene = new THREE.Scene();
@@ -94,7 +100,8 @@ const resizeRendererToDisplaySize = (renderer: THREE.WebGLRenderer) => {
 const animate = (
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
-  camera: THREE.PerspectiveCamera
+  camera: THREE.PerspectiveCamera,
+  manager: InteractionManager
 ) => {
   const render = (time: number) => {
     const timeInSeconds = time * 0.001;
@@ -107,6 +114,10 @@ const animate = (
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
+
+    animations.earthOrbit.forEach((object) => {
+      object.rotation.y = timeInSeconds * 0.005;
+    });
 
     animations.cloud.forEach((object) => {
       object.rotation.y = timeInSeconds * 0.05;
@@ -124,17 +135,25 @@ const animate = (
       object.rotation.y = timeInSeconds * 0.01;
     });
 
-    animations.earthOrbit.forEach((object) => {
-      object.rotation.y = timeInSeconds * 0.005;
-    });
-
     animations.asteroids.forEach((object, ndx) => {
       object.rotation.y = timeInSeconds * 0.1 + ndx * 0.05;
       object.rotation.x = timeInSeconds * 0.1 + ndx * 0.01;
       object.rotation.z = timeInSeconds * 0.1 - ndx * 0.05;
     });
 
-    renderer.render(scene, camera);
+    animations.functions.forEach((func) => {
+      func();
+    });
+
+    manager.update();
+
+    if (animations.cameras.length === 0) {
+      renderer.render(scene, camera);
+    } else {
+      animations.cameras[0].aspect = canvas.clientWidth / canvas.clientHeight;
+      animations.cameras[0].updateProjectionMatrix();
+      renderer.render(scene, animations.cameras[0]);
+    }
 
     window.requestAnimationFrame(render);
   };
@@ -198,7 +217,7 @@ const createEarth = (base: THREE.Object3D) => {
 
 const createMoonOrbit = (earthOrbit: THREE.Object3D) => {
   const moonOrbit = new THREE.Object3D();
-  moonOrbit.position.set(2 ** 0.5, 2 ** 0.5, 0);
+  moonOrbit.position.set(4, 0, 0);
   earthOrbit.add(moonOrbit);
   return moonOrbit;
 };
@@ -278,43 +297,75 @@ const shapeAsteroids = (position: THREE.BufferAttribute) => {
   position.set(finalArr);
 };
 
-const createAsteroids = (earthOrbit: THREE.Object3D, data: DataSorter) => {
+const createAsteroids = (
+  earthOrbit: THREE.Object3D,
+  data: DataSorter,
+  manager: InteractionManager
+) => {
   const neos = data.neoArr;
 
   const loader = new THREE.TextureLoader();
   const texture = loader.load(asteroidImg);
+  const texture2 = loader.load(asteroidBump);
 
   for (let i = 0; i < neos.length; i += 1) {
     const neo = neos[i];
+    const diameter = baseLog(data.averageDiameter(i) * 1000, 2);
 
     const asteroidOrbit = new THREE.Object3D();
     earthOrbit.add(asteroidOrbit);
-    const {
-      estimatedDiameterMax: max,
-      estimatedDiameterMin: min,
-      missDistance: distanceStr,
-      id,
-    } = neo;
+    const { missDistance: distanceStr, id } = neo;
     const distance = parseFloat(distanceStr);
 
-    const geometry = new THREE.OctahedronGeometry(1, 1);
+    const geometry = new THREE.OctahedronGeometry(diameter, 1);
     const material = new THREE.MeshPhongMaterial({
       map: texture,
-      emissive: "black",
-      emissiveIntensity: 1,
       specular: "white",
+      bumpMap: texture2,
+      bumpScale: 0.1,
     });
     const asteroid = new THREE.Mesh(geometry, material);
     const random = randomPosition(id, baseLog(distance / 10, 13));
-    asteroid.position.set(random.x, random.y, random.z);
+    asteroidOrbit.position.set(random.x, random.y, random.z);
     if (
       asteroid.geometry.attributes.position instanceof THREE.BufferAttribute
     ) {
       shapeAsteroids(asteroid.geometry.attributes.position);
     }
-    asteroid.scale.set(0.05, 0.05, 0.05);
+    asteroidOrbit.scale.set(0.009, 0.009, 0.009);
     asteroidOrbit.add(asteroid);
+
+    const tempV = new THREE.Vector3();
+    const camera = new THREE.PerspectiveCamera(25, 2, 0.1, 10);
+
+    asteroid.updateWorldMatrix(true, false);
+    asteroid.getWorldPosition(tempV);
+    camera.position.set(tempV.x - 100, tempV.y, tempV.z);
+    camera.scale.set(100, 100, 100);
+    camera.lookAt(tempV);
+    animations.functions.push(() => {
+      asteroid.getWorldPosition(tempV);
+      camera.lookAt(tempV);
+    });
+
+    asteroidOrbit.add(camera);
     animations.asteroids.push(asteroid);
+
+    manager.add(asteroid);
+    asteroid.addEventListener("click", (event) => {
+      animations.animate = false;
+      animations.cameras = [];
+      animations.cameras.push(camera);
+    });
+    asteroid.addEventListener("mouseover", (event) => {
+      asteroid.material.emissive.setHex(0xffffff);
+
+      document.body.style.cursor = "pointer";
+    });
+    asteroid.addEventListener("mouseout", (event) => {
+      asteroid.material.emissive.setHex(0x000000);
+      document.body.style.cursor = "default";
+    });
   }
 };
 
@@ -326,6 +377,7 @@ const init = (data: DataSorter) => {
     const renderer = new THREE.WebGLRenderer({ canvas });
     const scene = createScene(renderer);
     const camera = createCamera(scene);
+    const manager = new InteractionManager(renderer, camera, canvas, false);
     createOrbitControls(camera, canvas, center);
     createLighting(scene);
     const earthOrbit = createEarthOrbit(scene, center);
@@ -333,9 +385,9 @@ const init = (data: DataSorter) => {
     createEarth(lunarEarthOrbit);
     const moonOrbit = createMoonOrbit(lunarEarthOrbit);
     createMoon(moonOrbit);
-    createAsteroids(earthOrbit, data);
+    createAsteroids(earthOrbit, data, manager);
     renderer.render(scene, camera);
-    animate(renderer, scene, camera);
+    animate(renderer, scene, camera, manager);
   }
 };
 

@@ -124,6 +124,14 @@ class DataSorter {
       }
     }
   }
+
+  averageDiameter(num: number) {
+    return (
+      (this.neoArr[num].estimatedDiameterMax +
+        this.neoArr[num].estimatedDiameterMin) /
+      2
+    );
+  }
 }
 
 const retrieveInformation = async () => {
