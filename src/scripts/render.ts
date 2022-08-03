@@ -10,8 +10,25 @@ import moon from "../assets/moon.jpg";
 import moonbump from "../assets/moonbump.jpg";
 import asteroidImg from "../assets/asteroid.jpg";
 
-const objects: THREE.Mesh[] = [];
-const asteroids: THREE.Mesh[] = [];
+interface Animations {
+  cloud: THREE.Object3D[];
+  earth: THREE.Object3D[];
+  asteroids: THREE.Object3D[];
+  moon: THREE.Object3D[];
+  lunarEarth: THREE.Object3D[];
+  earthOrbit: THREE.Object3D[];
+}
+
+const animations: Animations = {
+  cloud: [],
+  earth: [],
+  asteroids: [],
+  moon: [],
+  lunarEarth: [],
+  earthOrbit: [],
+};
+
+const cameras: THREE.PerspectiveCamera[] = [];
 
 const createScene = (renderer: THREE.WebGLRenderer) => {
   const scene = new THREE.Scene();
@@ -91,8 +108,30 @@ const animate = (
       camera.updateProjectionMatrix();
     }
 
-    objects.forEach((object, ndx) => {
-      object.rotation.y = timeInSeconds * 0.02 + 0.02 * ndx;
+    animations.cloud.forEach((object) => {
+      object.rotation.y = timeInSeconds * 0.05;
+    });
+
+    animations.earth.forEach((object) => {
+      object.rotation.y = timeInSeconds * 0.02;
+    });
+
+    animations.moon.forEach((object) => {
+      object.rotation.y = timeInSeconds * 0.02;
+    });
+
+    animations.lunarEarth.forEach((object) => {
+      object.rotation.y = timeInSeconds * 0.01;
+    });
+
+    animations.earthOrbit.forEach((object) => {
+      object.rotation.y = timeInSeconds * 0.005;
+    });
+
+    animations.asteroids.forEach((object, ndx) => {
+      object.rotation.y = timeInSeconds * 0.1 + ndx * 0.05;
+      object.rotation.x = timeInSeconds * 0.1 + ndx * 0.01;
+      object.rotation.z = timeInSeconds * 0.1 - ndx * 0.05;
     });
 
     renderer.render(scene, camera);
@@ -108,7 +147,15 @@ const createEarthOrbit = (scene: THREE.Scene, center: THREE.Vector3) => {
   const myAxis = new THREE.Vector3(1, -1, 0);
   earthOrbit.rotateOnAxis(myAxis, THREE.MathUtils.degToRad(23.5));
   scene.add(earthOrbit);
+  animations.earthOrbit.push(earthOrbit);
   return earthOrbit;
+};
+
+const createLunarEarthOrbit = (earthOrbit: THREE.Object3D) => {
+  const lunarEarthOrbit = new THREE.Object3D();
+  earthOrbit.add(lunarEarthOrbit);
+  animations.lunarEarth.push(lunarEarthOrbit);
+  return lunarEarthOrbit;
 };
 
 const createEarth = (base: THREE.Object3D) => {
@@ -138,8 +185,8 @@ const createEarth = (base: THREE.Object3D) => {
 
   earth.add(ground);
   earth.add(cloud);
-  objects.push(ground);
-  objects.push(cloud);
+  animations.earth.push(ground);
+  animations.cloud.push(cloud);
 
   const myAxis = new THREE.Vector3(0, 0, 1);
   earth.rotateOnAxis(myAxis, THREE.MathUtils.degToRad(23.5));
@@ -171,7 +218,7 @@ const createMoon = (moonOrbit: THREE.Object3D) => {
   const moonMesh = new THREE.Mesh(geometry, material);
 
   moonOrbit.add(moonMesh);
-  objects.push(moonMesh);
+  animations.moon.push(moonMesh);
 };
 
 const shapeAsteroids = (position: THREE.BufferAttribute) => {
@@ -267,6 +314,7 @@ const createAsteroids = (earthOrbit: THREE.Object3D, data: DataSorter) => {
     }
     asteroid.scale.set(0.05, 0.05, 0.05);
     asteroidOrbit.add(asteroid);
+    animations.asteroids.push(asteroid);
   }
 };
 
@@ -281,8 +329,9 @@ const init = (data: DataSorter) => {
     createOrbitControls(camera, canvas, center);
     createLighting(scene);
     const earthOrbit = createEarthOrbit(scene, center);
-    createEarth(earthOrbit);
-    const moonOrbit = createMoonOrbit(earthOrbit);
+    const lunarEarthOrbit = createLunarEarthOrbit(earthOrbit);
+    createEarth(lunarEarthOrbit);
+    const moonOrbit = createMoonOrbit(lunarEarthOrbit);
     createMoon(moonOrbit);
     createAsteroids(earthOrbit, data);
     renderer.render(scene, camera);
