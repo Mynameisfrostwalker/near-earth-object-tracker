@@ -1,7 +1,7 @@
 @use "./reset.scss";
 @use "./mixins";
 
-body, #c {
+body, canvas {
     @include mixins.size(100vw, 100vh, false);
     display: block;
 }

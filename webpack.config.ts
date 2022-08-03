@@ -12,7 +12,8 @@ const config: Configuration = {
   entry: {
     index: './src/scripts/index.ts',
     render: './src/scripts/render.ts',
-    fetchData: './src/scripts/fetchData.ts'
+    fetchData: './src/scripts/fetchData.ts',
+    utilities: './src/scripts/utilities.ts'
   },
   module: {
     rules: [

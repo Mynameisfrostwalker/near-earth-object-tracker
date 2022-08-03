@@ -9,13 +9,13 @@ interface NEO {
     };
   };
   is_potentially_hazardous_asteroid: boolean;
-  closest_approach_data: {
-    closest_approach_date: string;
+  close_approach_data: {
+    close_approach_date: string;
     relative_velocity: {
       kilometers_per_second: string;
     };
     miss_distance: {
-      astronomical: string;
+      kilometers: string;
     };
   }[];
 }
@@ -49,4 +49,5 @@ const fetchData = async (
   return undefined;
 };
 
+export type { Data };
 export default fetchData;

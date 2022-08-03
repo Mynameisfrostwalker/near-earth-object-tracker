@@ -1,14 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GUI } from "lil-gui";
-import galaxy from "../assets/galaxy.png";
+import type { Data } from "./fetchData";
+import { baseLog, randomPosition } from "./utilities";
+import galaxy from "../assets/galaxy2.jpg";
 import earthmap from "../assets/earthmap1k.jpg";
 import earthbump from "../assets/earthbump.jpg";
 import earthcloud from "../assets/earthCloud.png";
 import moon from "../assets/moon.jpg";
 import moonbump from "../assets/moonbump.jpg";
+import asteroidImg from "../assets/asteroid.jpg";
 
 const objects: THREE.Mesh[] = [];
+const asteroids: THREE.Mesh[] = [];
 
 const createScene = (renderer: THREE.WebGLRenderer) => {
   const scene = new THREE.Scene();
@@ -27,7 +30,7 @@ const createCamera = (scene: THREE.Scene) => {
   const fov = 75;
   const aspect = 2;
   const near = 0.1;
-  const far = 100;
+  const far = 25;
 
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
   camera.position.set(0, 0, 5);
@@ -148,7 +151,7 @@ const createEarth = (base: THREE.Object3D) => {
 
 const createMoonOrbit = (earthOrbit: THREE.Object3D) => {
   const moonOrbit = new THREE.Object3D();
-  moonOrbit.position.x = 2;
+  moonOrbit.position.set(2 ** 0.5, 2 ** 0.5, 0);
   earthOrbit.add(moonOrbit);
   return moonOrbit;
 };
@@ -171,9 +174,110 @@ const createMoon = (moonOrbit: THREE.Object3D) => {
   objects.push(moonMesh);
 };
 
-const init = () => {
+const shapeAsteroids = (position: THREE.BufferAttribute) => {
+  const arrLike = position.array;
+  let check = 0;
+  const positionStore: number[][] = [[]];
+  const positionArr = Array.from(arrLike);
+  positionArr.forEach((number) => {
+    if (check > 2) {
+      check = 1;
+      positionStore[positionStore.length] = [number];
+    } else {
+      positionStore[positionStore.length - 1].push(number);
+      check += 1;
+    }
+  });
+
+  const uniqueValues: number[][] = [];
+  positionStore.forEach((arr) => {
+    if (uniqueValues.length === 0) {
+      uniqueValues.push(arr);
+    } else {
+      let val = true;
+      uniqueValues.forEach((arr2) => {
+        if (arr[0] === arr2[0] && arr[1] === arr2[1] && arr[2] === arr2[2]) {
+          val = false;
+        }
+      });
+      if (val) {
+        uniqueValues.push(arr);
+      }
+    }
+  });
+
+  const preventMut: number[][] = [];
+  uniqueValues.forEach((arr) => {
+    const x = (arr[0] + -0.25 + Math.random() * 0.5).toFixed(1);
+    const y = (arr[1] + -0.25 + Math.random() * 0.5).toFixed(1);
+    const z = (arr[2] + -0.25 + Math.random() * 0.5).toFixed(1);
+
+    positionStore.forEach((arr2, ndx) => {
+      if (arr[0] === arr2[0] && arr[1] === arr2[1] && arr[2] === arr2[2]) {
+        preventMut[ndx] = [parseFloat(x), parseFloat(y), parseFloat(z)];
+      }
+    });
+  });
+
+  const finalArr: number[] = [];
+
+  preventMut.forEach((arr) => {
+    const [x, y, z] = arr;
+    finalArr.push(x);
+    finalArr.push(y);
+    finalArr.push(z);
+  });
+
+  position.set(finalArr);
+};
+
+const createAsteroids = (earthOrbit: THREE.Object3D, data: Data) => {
+  const neos = data.near_earth_objects;
+  const keys = Object.keys(neos);
+
+  const loader = new THREE.TextureLoader();
+  const texture = loader.load(asteroidImg);
+
+  for (let i = 0; i < keys.length; i += 1) {
+    if (keys[i] in neos) {
+      const neo = neos[keys[i]];
+
+      for (let j = 0; j < neo.length; j += 1) {
+        const asteroidOrbit = new THREE.Object3D();
+        earthOrbit.add(asteroidOrbit);
+
+        const { estimated_diameter_max: max, estimated_diameter_min: min } =
+          neo[j].estimated_diameter.kilometers;
+        const distance = parseFloat(
+          neo[j].close_approach_data[0].miss_distance.kilometers
+        );
+        const { id } = neo[j];
+
+        const diameter = (max + min) / 2;
+        const geometry = new THREE.OctahedronGeometry(1, 1);
+        const material = new THREE.MeshPhongMaterial({
+          map: texture,
+          emissive: "black",
+          emissiveIntensity: 2,
+        });
+        const asteroid = new THREE.Mesh(geometry, material);
+        const random = randomPosition(id, baseLog(distance / 10, 13));
+        asteroid.position.set(random.x, random.y, random.z);
+        if (
+          asteroid.geometry.attributes.position instanceof THREE.BufferAttribute
+        ) {
+          shapeAsteroids(asteroid.geometry.attributes.position);
+        }
+        asteroid.scale.set(0.05, 0.05, 0.05);
+        asteroidOrbit.add(asteroid);
+      }
+    }
+  }
+};
+
+const init = (data: Data) => {
   const canvas = document.querySelector("#c");
-  const center = new THREE.Vector3(1, 1, 0);
+  const center = new THREE.Vector3(0, 0, 0);
 
   if (canvas instanceof HTMLCanvasElement) {
     const renderer = new THREE.WebGLRenderer({ canvas });
@@ -185,6 +289,7 @@ const init = () => {
     createEarth(earthOrbit);
     const moonOrbit = createMoonOrbit(earthOrbit);
     createMoon(moonOrbit);
+    createAsteroids(earthOrbit, data);
     renderer.render(scene, camera);
     animate(renderer, scene, camera);
   }
