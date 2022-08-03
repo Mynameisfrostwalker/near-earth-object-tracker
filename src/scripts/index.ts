@@ -1,11 +1,13 @@
 import "../styles/main.scss";
 import init from "./render";
-import fetchData from "./fetchData";
+import retrieveInformation from "./fetchData";
 
-fetchData("2022-07-26", "2022-08-02")
+retrieveInformation()
   .then((data) => {
     if (data) {
       init(data);
+    } else {
+      console.log("Error");
     }
   })
   .catch((err) => {

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import type { Data } from "./fetchData";
+import type { DataSorter } from "./fetchData";
 import { baseLog, randomPosition } from "./utilities";
 import galaxy from "../assets/galaxy2.jpg";
 import earthmap from "../assets/earthmap1k.jpg";
@@ -231,51 +231,46 @@ const shapeAsteroids = (position: THREE.BufferAttribute) => {
   position.set(finalArr);
 };
 
-const createAsteroids = (earthOrbit: THREE.Object3D, data: Data) => {
-  const neos = data.near_earth_objects;
-  const keys = Object.keys(neos);
+const createAsteroids = (earthOrbit: THREE.Object3D, data: DataSorter) => {
+  const neos = data.neoArr;
 
   const loader = new THREE.TextureLoader();
   const texture = loader.load(asteroidImg);
 
-  for (let i = 0; i < keys.length; i += 1) {
-    if (keys[i] in neos) {
-      const neo = neos[keys[i]];
+  for (let i = 0; i < neos.length; i += 1) {
+    const neo = neos[i];
 
-      for (let j = 0; j < neo.length; j += 1) {
-        const asteroidOrbit = new THREE.Object3D();
-        earthOrbit.add(asteroidOrbit);
+    const asteroidOrbit = new THREE.Object3D();
+    earthOrbit.add(asteroidOrbit);
+    const {
+      estimatedDiameterMax: max,
+      estimatedDiameterMin: min,
+      missDistance: distanceStr,
+      id,
+    } = neo;
+    const distance = parseFloat(distanceStr);
 
-        const { estimated_diameter_max: max, estimated_diameter_min: min } =
-          neo[j].estimated_diameter.kilometers;
-        const distance = parseFloat(
-          neo[j].close_approach_data[0].miss_distance.kilometers
-        );
-        const { id } = neo[j];
-
-        const diameter = (max + min) / 2;
-        const geometry = new THREE.OctahedronGeometry(1, 1);
-        const material = new THREE.MeshPhongMaterial({
-          map: texture,
-          emissive: "black",
-          emissiveIntensity: 2,
-        });
-        const asteroid = new THREE.Mesh(geometry, material);
-        const random = randomPosition(id, baseLog(distance / 10, 13));
-        asteroid.position.set(random.x, random.y, random.z);
-        if (
-          asteroid.geometry.attributes.position instanceof THREE.BufferAttribute
-        ) {
-          shapeAsteroids(asteroid.geometry.attributes.position);
-        }
-        asteroid.scale.set(0.05, 0.05, 0.05);
-        asteroidOrbit.add(asteroid);
-      }
+    const geometry = new THREE.OctahedronGeometry(1, 1);
+    const material = new THREE.MeshPhongMaterial({
+      map: texture,
+      emissive: "black",
+      emissiveIntensity: 1,
+      specular: "white",
+    });
+    const asteroid = new THREE.Mesh(geometry, material);
+    const random = randomPosition(id, baseLog(distance / 10, 13));
+    asteroid.position.set(random.x, random.y, random.z);
+    if (
+      asteroid.geometry.attributes.position instanceof THREE.BufferAttribute
+    ) {
+      shapeAsteroids(asteroid.geometry.attributes.position);
     }
+    asteroid.scale.set(0.05, 0.05, 0.05);
+    asteroidOrbit.add(asteroid);
   }
 };
 
-const init = (data: Data) => {
+const init = (data: DataSorter) => {
   const canvas = document.querySelector("#c");
   const center = new THREE.Vector3(0, 0, 0);
 
