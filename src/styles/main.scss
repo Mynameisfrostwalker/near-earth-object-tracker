@@ -79,3 +79,9 @@ body, .container {
     @include mixins.color(aqua, null);
     @include mixins.font(calc(10px + 1.5vw), 500, "Space font");
 }
+
+.error {
+    @include mixins.position(absolute, "T", 50vh, "L", 50vw);
+    @include mixins.color(red, null);
+    @include mixins.font(calc(10px + 1.5vw), 500, "Space font");
+}

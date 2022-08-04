@@ -221,7 +221,13 @@ const displayAsteroidInfo = (
 };
 
 const errorDisplay = () => {
+  const container = document.querySelector(".container");
+  if (container instanceof HTMLElement) {
+    const errorDiv = document.createElement("div");
+    errorDiv.classList.add("error");
+    errorDiv.textContent = "Error loading data!";
+    container.appendChild(errorDiv);
+  }
+};
 
-}
-
-export { displayAsteroidInfo, initialDisplay };
+export { displayAsteroidInfo, initialDisplay, errorDisplay };

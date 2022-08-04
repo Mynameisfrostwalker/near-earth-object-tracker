@@ -2,7 +2,7 @@ import "../styles/main.scss";
 import "@fortawesome/fontawesome-free/js/all";
 import init from "./render";
 import retrieveInformation from "./fetchData";
-import { initialDisplay } from "./display";
+import { initialDisplay, errorDisplay } from "./display";
 
 retrieveInformation()
   .then((data) => {
@@ -11,9 +11,11 @@ retrieveInformation()
       initialDisplay();
     } else {
       init(null);
+      errorDisplay();
     }
   })
   .catch((err) => {
     init(null);
+    errorDisplay();
     throw new Error(`Error!`);
   });
