@@ -1,4 +1,80 @@
 import type { AsteroidInfo } from "./fetchData";
+import spacemp3 from "../assets/space.mp3";
+import spaceogg from "../assets/space.ogg";
+
+const createAudio = () => {
+  const audio = document.createElement("audio");
+  audio.classList.add("space");
+  audio.setAttribute("autoplay", "true");
+  audio.setAttribute("loop", "true");
+  const source = document.createElement("source");
+  source.src = spacemp3;
+  source.type = "audio/mpeg";
+  audio.appendChild(source);
+  const source2 = document.createElement("source");
+  source2.src = spaceogg;
+  source2.type = "audio/ogg";
+  audio.appendChild(source2);
+  return audio;
+};
+
+const initialDisplay = () => {
+  const container = document.querySelector(".container");
+  if (container instanceof HTMLElement) {
+    const soundDiv = document.createElement("div");
+    soundDiv.classList.add("soundDiv");
+
+    let sound = false;
+    const microDiv = document.createElement("div");
+    microDiv.classList.add("microDiv");
+    const i = document.createElement("i");
+    i.classList.add("fas", "fa-microphone-slash");
+    microDiv.appendChild(i);
+    const audio = createAudio();
+    microDiv.appendChild(audio);
+    soundDiv.appendChild(microDiv);
+
+    microDiv.addEventListener("click", () => {
+      if (!sound) {
+        sound = true;
+        audio
+          .play()
+          .then(() => {
+            const microDiv2 = document.querySelector(".microDiv");
+            const soundDiv2 = document.querySelector(".soundDiv");
+            const audio2 = document.querySelector("audio");
+            if (microDiv2 && soundDiv2 && audio2) {
+              microDiv2.replaceChildren();
+              const i2 = document.createElement("i");
+              i2.classList.add("fas", "fa-microphone");
+              microDiv2.appendChild(i2);
+              microDiv2.appendChild(audio2);
+              soundDiv2.appendChild(microDiv2);
+            }
+          })
+          .catch(() => {
+            console.log("Audio failed to play!");
+          });
+      } else {
+        sound = false;
+        const audio2 = document.querySelector("audio");
+        const microDiv2 = document.querySelector(".microDiv");
+        const soundDiv2 = document.querySelector(".soundDiv");
+        if (microDiv2 && soundDiv2 && audio2) {
+          audio2.pause();
+          microDiv2.replaceChildren();
+          const i2 = document.createElement("i");
+          i2.classList.add("fas", "fa-microphone-slash");
+          microDiv2.appendChild(i2);
+          microDiv2.appendChild(audio2);
+          soundDiv2.appendChild(microDiv2);
+        }
+      }
+    });
+
+    container.appendChild(soundDiv);
+  }
+};
 
 const displayDiv1Info = (asteroidInfo: AsteroidInfo) => {
   const div1 = document.createElement("div");
@@ -144,4 +220,8 @@ const displayAsteroidInfo = (
   }
 };
 
-export default displayAsteroidInfo;
+const errorDisplay = () => {
+
+}
+
+export { displayAsteroidInfo, initialDisplay };

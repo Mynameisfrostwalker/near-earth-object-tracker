@@ -64,6 +64,7 @@ const fetchData = async (
       return data;
     }
     console.log("Response Error!");
+    throw new Error("Error");
   } catch (error) {
     if (typeof error === "string") {
       console.log("Network Error");
@@ -135,12 +136,16 @@ class DataSorter {
 }
 
 const retrieveInformation = async () => {
-  const today = format(new Date(), "yyyy-MM-dd");
-  const aWeekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
-  const data = await fetchData(aWeekAgo, today);
-  if (data) {
-    const information = new DataSorter(data);
-    return information;
+  try {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const aWeekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
+    const data = await fetchData(aWeekAgo, today);
+    if (data) {
+      const information = new DataSorter(data);
+      return information;
+    }
+  } catch (error) {
+    throw new Error("Error!");
   }
   return undefined;
 };

@@ -14,7 +14,7 @@ const config: Configuration = {
     render: './src/scripts/render.ts',
     fetchData: './src/scripts/fetchData.ts',
     utilities: './src/scripts/utilities.ts',
-    displayAsteroidInfo: './src/scripts/displayAsteroidInfo.ts',
+    display: './src/scripts/display.ts',
   },
   module: {
     rules: [
@@ -37,6 +37,10 @@ const config: Configuration = {
       },
       {                                                                        
         test: /\.json$/i,                                                       
+        type: 'asset/resource'                                 
+      },
+      {                                                                        
+        test: /\.(mp3|ogg)$/i,                                                       
         type: 'asset/resource'                                 
      },
     ],

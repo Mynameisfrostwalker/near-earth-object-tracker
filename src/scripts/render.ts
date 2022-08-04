@@ -3,7 +3,7 @@ import { InteractionManager, InteractiveEvent } from "three.interactive";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import type { DataSorter } from "./fetchData";
 import { baseLog, randomPosition } from "./utilities";
-import displayAsteroidInfo from "./displayAsteroidInfo";
+import { displayAsteroidInfo } from "./display";
 import galaxy from "../assets/galaxy2.jpg";
 import earthmap from "../assets/earthmap1k.jpg";
 import earthbump from "../assets/earthbump.jpg";
@@ -385,7 +385,7 @@ const createAsteroids = (
   }
 };
 
-const init = (data: DataSorter) => {
+const init = (data: DataSorter | null) => {
   const canvas = document.querySelector("#c");
   const center = new THREE.Vector3(0, 0, 0);
 
@@ -396,12 +396,14 @@ const init = (data: DataSorter) => {
     const manager = new InteractionManager(renderer, camera, canvas, false);
     createOrbitControls(camera, canvas, center);
     createLighting(scene);
-    const earthOrbit = createEarthOrbit(scene, center);
-    const lunarEarthOrbit = createLunarEarthOrbit(earthOrbit);
-    createEarth(lunarEarthOrbit);
-    const moonOrbit = createMoonOrbit(lunarEarthOrbit);
-    createMoon(moonOrbit);
-    createAsteroids(earthOrbit, data, manager, canvas);
+    if (data) {
+      const earthOrbit = createEarthOrbit(scene, center);
+      const lunarEarthOrbit = createLunarEarthOrbit(earthOrbit);
+      createEarth(lunarEarthOrbit);
+      const moonOrbit = createMoonOrbit(lunarEarthOrbit);
+      createMoon(moonOrbit);
+      createAsteroids(earthOrbit, data, manager, canvas);
+    }
     renderer.render(scene, camera);
     animate(renderer, scene, camera, manager);
   }
