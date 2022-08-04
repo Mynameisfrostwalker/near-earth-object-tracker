@@ -13,7 +13,8 @@ const config: Configuration = {
     index: './src/scripts/index.ts',
     render: './src/scripts/render.ts',
     fetchData: './src/scripts/fetchData.ts',
-    utilities: './src/scripts/utilities.ts'
+    utilities: './src/scripts/utilities.ts',
+    displayAsteroidInfo: './src/scripts/displayAsteroidInfo.ts',
   },
   module: {
     rules: [

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { InteractionManager } from "three.interactive";
+import { InteractionManager, InteractiveEvent } from "three.interactive";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import type { DataSorter } from "./fetchData";
 import { baseLog, randomPosition } from "./utilities";
@@ -36,9 +36,10 @@ const animations: Animations = {
   functions: [],
 };
 
+const loader = new THREE.TextureLoader();
+
 const createScene = (renderer: THREE.WebGLRenderer) => {
   const scene = new THREE.Scene();
-  const loader = new THREE.TextureLoader();
   const texture = loader.load(galaxy, () => {
     if (texture.image instanceof HTMLImageElement) {
       const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
@@ -128,7 +129,7 @@ const animate = (
     });
 
     animations.moon.forEach((object) => {
-      object.rotation.y = timeInSeconds * 0.02;
+      object.rotation.y = timeInSeconds * 0.01;
     });
 
     animations.lunarEarth.forEach((object) => {
@@ -183,7 +184,6 @@ const createEarth = (base: THREE.Object3D) => {
   const geometry = new THREE.SphereGeometry(1);
   const cloudGeometry = new THREE.SphereGeometry(1.009);
 
-  const loader = new THREE.TextureLoader();
   const texture = loader.load(earthmap);
   const bumpTexture = loader.load(earthbump);
   const cloudTexture = loader.load(earthcloud);
@@ -225,7 +225,6 @@ const createMoonOrbit = (earthOrbit: THREE.Object3D) => {
 const createMoon = (moonOrbit: THREE.Object3D) => {
   const geometry = new THREE.SphereGeometry(0.43);
 
-  const loader = new THREE.TextureLoader();
   const moonTexture = loader.load(moon);
   const bumpTexture = loader.load(moonbump);
   const material = new THREE.MeshPhongMaterial({
@@ -300,11 +299,11 @@ const shapeAsteroids = (position: THREE.BufferAttribute) => {
 const createAsteroids = (
   earthOrbit: THREE.Object3D,
   data: DataSorter,
-  manager: InteractionManager
+  manager: InteractionManager,
+  canvas: HTMLCanvasElement
 ) => {
   const neos = data.neoArr;
 
-  const loader = new THREE.TextureLoader();
   const texture = loader.load(asteroidImg);
   const texture2 = loader.load(asteroidBump);
 
@@ -317,7 +316,7 @@ const createAsteroids = (
     const { missDistance: distanceStr, id } = neo;
     const distance = parseFloat(distanceStr);
 
-    const geometry = new THREE.OctahedronGeometry(diameter, 1);
+    const geometry = new THREE.IcosahedronGeometry(diameter);
     const material = new THREE.MeshPhongMaterial({
       map: texture,
       specular: "white",
@@ -336,13 +335,14 @@ const createAsteroids = (
     asteroidOrbit.add(asteroid);
 
     const tempV = new THREE.Vector3();
-    const camera = new THREE.PerspectiveCamera(25, 2, 0.1, 10);
+    const camera = new THREE.PerspectiveCamera(25, 2, 0.1, 100);
 
     asteroid.updateWorldMatrix(true, false);
     asteroid.getWorldPosition(tempV);
     camera.position.set(tempV.x - 100, tempV.y, tempV.z);
     camera.scale.set(100, 100, 100);
     camera.lookAt(tempV);
+    createOrbitControls(camera, canvas, tempV);
     animations.functions.push(() => {
       asteroid.getWorldPosition(tempV);
       camera.lookAt(tempV);
@@ -351,21 +351,30 @@ const createAsteroids = (
     asteroidOrbit.add(camera);
     animations.asteroids.push(asteroid);
 
-    manager.add(asteroid);
-    asteroid.addEventListener("click", (event) => {
-      animations.animate = false;
-      animations.cameras = [];
-      animations.cameras.push(camera);
+    asteroid.addEventListener("click", (e) => {
+      if (e instanceof InteractiveEvent) {
+        e.stopPropagation();
+        animations.cameras = [];
+        animations.cameras.push(camera);
+        manager.remove(asteroid);
+      }
     });
-    asteroid.addEventListener("mouseover", (event) => {
-      asteroid.material.emissive.setHex(0xffffff);
+    asteroid.addEventListener("mouseover", (e) => {
+      if (e instanceof InteractiveEvent) {
+        e.stopPropagation();
+        asteroid.material.emissive.setHex(0xffffff);
+        document.body.style.cursor = "pointer";
+      }
+    });
+    asteroid.addEventListener("mouseout", (e) => {
+      if (e instanceof InteractiveEvent) {
+        e.stopPropagation();
+        asteroid.material.emissive.setHex(0x000000);
+        document.body.style.cursor = "default";
+      }
+    });
 
-      document.body.style.cursor = "pointer";
-    });
-    asteroid.addEventListener("mouseout", (event) => {
-      asteroid.material.emissive.setHex(0x000000);
-      document.body.style.cursor = "default";
-    });
+    manager.add(asteroid);
   }
 };
 
@@ -385,7 +394,7 @@ const init = (data: DataSorter) => {
     createEarth(lunarEarthOrbit);
     const moonOrbit = createMoonOrbit(lunarEarthOrbit);
     createMoon(moonOrbit);
-    createAsteroids(earthOrbit, data, manager);
+    createAsteroids(earthOrbit, data, manager, canvas);
     renderer.render(scene, camera);
     animate(renderer, scene, camera, manager);
   }
