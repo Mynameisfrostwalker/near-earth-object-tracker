@@ -3,6 +3,7 @@ import { InteractionManager, InteractiveEvent } from "three.interactive";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import type { DataSorter } from "./fetchData";
 import { baseLog, randomPosition } from "./utilities";
+import displayAsteroidInfo from "./displayAsteroidInfo";
 import galaxy from "../assets/galaxy2.jpg";
 import earthmap from "../assets/earthmap1k.jpg";
 import earthbump from "../assets/earthbump.jpg";
@@ -316,7 +317,7 @@ const createAsteroids = (
     const { missDistance: distanceStr, id } = neo;
     const distance = parseFloat(distanceStr);
 
-    const geometry = new THREE.IcosahedronGeometry(diameter);
+    const geometry = new THREE.IcosahedronGeometry(diameter, 1);
     const material = new THREE.MeshPhongMaterial({
       map: texture,
       specular: "white",
@@ -351,12 +352,18 @@ const createAsteroids = (
     asteroidOrbit.add(camera);
     animations.asteroids.push(asteroid);
 
+    const revertToNormalDisplay = () => {
+      // canvas.style.pointerEvents = "all";
+      animations.cameras = [];
+    };
+
     asteroid.addEventListener("click", (e) => {
       if (e instanceof InteractiveEvent) {
         e.stopPropagation();
         animations.cameras = [];
         animations.cameras.push(camera);
-        manager.remove(asteroid);
+        // canvas.style.pointerEvents = "none";
+        displayAsteroidInfo(neo, revertToNormalDisplay);
       }
     });
     asteroid.addEventListener("mouseover", (e) => {

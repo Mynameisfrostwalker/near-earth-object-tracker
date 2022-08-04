@@ -3,7 +3,7 @@ import { format, subDays } from "date-fns";
 interface NEO {
   id: string;
   name: string;
-  absolute_magnitude: number;
+  absolute_magnitude_h: number;
   estimated_diameter: {
     kilometers: {
       estimated_diameter_min: number;
@@ -12,7 +12,7 @@ interface NEO {
   };
   is_potentially_hazardous_asteroid: boolean;
   close_approach_data: {
-    close_approach_date: string;
+    close_approach_date_full: string;
     relative_velocity: {
       kilometers_per_second: string;
     };
@@ -93,13 +93,13 @@ class DataSorter {
           const {
             id,
             name,
-            absolute_magnitude: absoluteMagnitude,
+            absolute_magnitude_h: absoluteMagnitude,
             is_potentially_hazardous_asteroid: isPotentiallyHazardous,
           } = neo[j];
           const { estimated_diameter_max: max, estimated_diameter_min: min } =
             neo[j].estimated_diameter.kilometers;
           const {
-            close_approach_date: closestApproachDate,
+            close_approach_date_full: closestApproachDate,
             relative_velocity: { kilometers_per_second: kms },
             orbiting_body: orbitingBody,
           } = neo[j].close_approach_data[0];
@@ -145,5 +145,5 @@ const retrieveInformation = async () => {
   return undefined;
 };
 
-export type { DataSorter };
+export type { DataSorter, AsteroidInfo };
 export default retrieveInformation;

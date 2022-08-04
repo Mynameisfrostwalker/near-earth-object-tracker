@@ -1,7 +1,75 @@
 @use "./reset.scss";
 @use "./mixins";
 
-body, canvas {
+@font-face {
+    font-family: "Space font";
+    src: url(../assets/space\ age.ttf);
+}
+
+body, .container {
     @include mixins.size(100vw, 100vh, false);
     display: block;
+}
+
+.container {
+    @include mixins.position(relative);
+    overflow: hidden;
+
+    #c {
+        @include mixins.size(100%, 100%, false);
+    }
+}
+
+.info {
+    @include mixins.position(absolute, "T", 0, "L", 0);
+    @include mixins.size(100%, 100%, false);
+    @include mixins.flex(row, flex-start, flex-start);
+    @include mixins.color(aqua, null);
+    @include mixins.font(calc(10px + 1.5vw), 500, "Space font");
+    text-shadow: 1px 1px 2px white;
+    pointer-events: none;
+    flex-wrap: wrap;
+
+    >div {
+        @include mixins.size(50%, 33%, false);
+        @include mixins.flex(column, null, space-evenly);
+        @include mixins.box-control(0, 10px);
+    }
+
+    >div:nth-child(1) {
+        align-self: flex-start;
+    }
+
+    >div:nth-child(2) {
+        align-self: flex-start;
+        text-align: right;
+    }
+
+    >div:nth-child(3) {
+        align-self: flex-end;
+
+    }
+
+    >div:nth-child(4) {
+        align-self: flex-end;
+        text-align: right;
+    }
+
+    
+}
+
+.hazardDiv, .backDiv {
+    @include mixins.flex(row, center, flex-start);
+
+    &.hazard {
+        @include mixins.color(#d11, null);
+    }
+
+    &.not-hazard {
+        @include mixins.color(green, null);
+    }
+}
+
+.backDiv {
+    pointer-events: all;
 }

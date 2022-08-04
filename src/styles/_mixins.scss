@@ -34,9 +34,10 @@
     list-style-type: none;
 }
 
-@mixin font($size, $weight: 500) {
+@mixin font($size, $weight: 500, $family: (Helvetica, Arial, sans-serif)) {
     font-size: $size;
     font-weight: $weight;
+    font-family: $family, Arial, Helvetica, sans-serif;
 }
 
 @mixin color($color, $bgcolor) {
