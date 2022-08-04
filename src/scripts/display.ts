@@ -92,7 +92,9 @@ const displayDiv1Info = (asteroidInfo: AsteroidInfo) => {
 
   const velocityDiv = document.createElement("div");
   velocityDiv.classList.add("velocityDiv");
-  velocityDiv.textContent = `Relative velocity: ${asteroidInfo.relativeVelocity} km/s`;
+  velocityDiv.textContent = `Relative velocity: ${parseFloat(
+    asteroidInfo.relativeVelocity
+  ).toFixed(1)} km/s`;
   div1.appendChild(velocityDiv);
 
   return div1;
@@ -104,12 +106,16 @@ const displayDiv2Info = (asteroidInfo: AsteroidInfo) => {
 
   const maxDiameterDiv = document.createElement("div");
   maxDiameterDiv.classList.add("maxDiameterDiv");
-  maxDiameterDiv.textContent = `Maximum estimated diameter: ${asteroidInfo.estimatedDiameterMax} km`;
+  maxDiameterDiv.textContent = `Maximum estimated diameter: ${parseFloat(
+    asteroidInfo.estimatedDiameterMax.toString()
+  ).toFixed(1)} km`;
   div2.appendChild(maxDiameterDiv);
 
   const minDiameterDiv = document.createElement("div");
   minDiameterDiv.classList.add("minDiameterDiv");
-  minDiameterDiv.textContent = `Minimum estimated diameter: ${asteroidInfo.estimatedDiameterMin} km`;
+  minDiameterDiv.textContent = `Minimum estimated diameter: ${parseFloat(
+    asteroidInfo.estimatedDiameterMin.toString()
+  ).toFixed(1)} km`;
   div2.appendChild(minDiameterDiv);
 
   return div2;

@@ -25,7 +25,7 @@ body, .container {
     @include mixins.size(100%, 100%, false);
     @include mixins.flex(row, flex-start, flex-start);
     @include mixins.color(aqua, null);
-    @include mixins.font(calc(10px + 1.5vw), 500, "Space font");
+    @include mixins.font(calc(10px + 0.75vw + 0.10vh), 500, "Space font");
     text-shadow: 1px 1px 2px white;
     pointer-events: none;
     flex-wrap: wrap;
@@ -51,6 +51,7 @@ body, .container {
     }
 
     >div:nth-child(4) {
+        margin-bottom: 20px;
         align-self: flex-end;
         text-align: right;
     }
