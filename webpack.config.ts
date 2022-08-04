@@ -8,7 +8,7 @@ const devServer: DevServerConfiguration = {
 };
 
 const config: Configuration = {
-  mode: 'development',
+  mode: 'production',
   entry: {
     index: './src/scripts/index.ts',
     render: './src/scripts/render.ts',
@@ -48,7 +48,6 @@ const config: Configuration = {
   resolve: {
     extensions: ['.js', '.ts'],
   },
-  devtool: 'inline-source-map',
   plugins: [
     new HTMLWebpackPlugin({
         template: './src/index.html',
