@@ -117,6 +117,11 @@ const displayDiv2Info = (asteroidInfo: AsteroidInfo) => {
   ).toFixed(2)} m`;
   div2.appendChild(minDiameterDiv);
 
+  const orbitingBodyDiv = document.createElement("div");
+  orbitingBodyDiv.classList.add("orbitingBodyDiv");
+  orbitingBodyDiv.textContent = `Orbiting body: ${asteroidInfo.orbitingBody}`;
+  div2.appendChild(orbitingBodyDiv);
+
   return div2;
 };
 
@@ -189,11 +194,6 @@ const displayDiv4Info = (asteroidInfo: AsteroidInfo) => {
     parseFloat(asteroidInfo.missDistance) / 1000
   ).toFixed(2)} m`;
   div4.appendChild(missDistanceDiv);
-
-  const orbitingBodyDiv = document.createElement("div");
-  orbitingBodyDiv.classList.add("orbitingBodyDiv");
-  orbitingBodyDiv.textContent = `Orbiting body: ${asteroidInfo.orbitingBody}`;
-  div4.appendChild(orbitingBodyDiv);
 
   return div4;
 };

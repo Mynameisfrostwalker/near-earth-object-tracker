@@ -46,12 +46,13 @@ body, .container {
     }
 
     >div:nth-child(3) {
+        margin-bottom: calc(10px + 4vw + 0.1vh);
         align-self: flex-end;
 
     }
 
     >div:nth-child(4) {
-        margin-bottom: 20px;
+        margin-bottom: calc(10px + 4vw + 0.1vh);
         align-self: flex-end;
         text-align: right;
     }
