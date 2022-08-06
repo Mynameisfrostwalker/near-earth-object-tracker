@@ -27,7 +27,7 @@ const pseudoRandom = (id: string) => {
 const randomPosition = (id: string, distance: number) => {
   const value1 = pseudoRandom(`${id}12345`) * distance;
   const value2 =
-    pseudoRandom(id + id) * (pseudoRandom(`${id}53241`) > 0.5 ? -1 : 1);
+    pseudoRandom(id + id) * (pseudoRandom(`${id}53241`) > 0.5 ? -1.5 : 1.5);
   const intermediate = value1 ** 2 + value2 ** 2;
   const value3 = (distance ** 2 - intermediate) ** 0.5;
 

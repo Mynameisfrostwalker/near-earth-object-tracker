@@ -5,7 +5,6 @@ import spaceogg from "../assets/space.ogg";
 const createAudio = () => {
   const audio = document.createElement("audio");
   audio.classList.add("space");
-  audio.setAttribute("autoplay", "true");
   audio.setAttribute("loop", "true");
   const source = document.createElement("source");
   source.src = spacemp3;
@@ -106,16 +105,16 @@ const displayDiv2Info = (asteroidInfo: AsteroidInfo) => {
 
   const maxDiameterDiv = document.createElement("div");
   maxDiameterDiv.classList.add("maxDiameterDiv");
-  maxDiameterDiv.textContent = `Maximum estimated diameter: ${parseFloat(
-    asteroidInfo.estimatedDiameterMax.toString()
-  ).toFixed(1)} km`;
+  maxDiameterDiv.textContent = `Maximum estimated diameter: ${(
+    parseFloat(asteroidInfo.estimatedDiameterMax.toString()) * 1000
+  ).toFixed(2)} m`;
   div2.appendChild(maxDiameterDiv);
 
   const minDiameterDiv = document.createElement("div");
   minDiameterDiv.classList.add("minDiameterDiv");
-  minDiameterDiv.textContent = `Minimum estimated diameter: ${parseFloat(
-    asteroidInfo.estimatedDiameterMin.toString()
-  ).toFixed(1)} km`;
+  minDiameterDiv.textContent = `Minimum estimated diameter: ${(
+    parseFloat(asteroidInfo.estimatedDiameterMin.toString()) * 1000
+  ).toFixed(2)} m`;
   div2.appendChild(minDiameterDiv);
 
   return div2;
@@ -186,9 +185,9 @@ const displayDiv4Info = (asteroidInfo: AsteroidInfo) => {
 
   const missDistanceDiv = document.createElement("div");
   missDistanceDiv.classList.add("missDistanceDiv");
-  missDistanceDiv.textContent = `Miss distance: ${parseFloat(
-    asteroidInfo.missDistance
-  ).toFixed(1)} km`;
+  missDistanceDiv.textContent = `Miss distance: ${(
+    parseFloat(asteroidInfo.missDistance) / 1000
+  ).toFixed(2)} m`;
   div4.appendChild(missDistanceDiv);
 
   const orbitingBodyDiv = document.createElement("div");

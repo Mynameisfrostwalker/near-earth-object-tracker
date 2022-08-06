@@ -80,6 +80,7 @@ body, .container {
     @include mixins.color(aqua, null);
     @include mixins.font(calc(10px + 1.5vw), 500, "Space font");
     @include mixins.box-control(null, 10px, null, null);
+    transform: translateX(-50%);
 }
 
 .error {

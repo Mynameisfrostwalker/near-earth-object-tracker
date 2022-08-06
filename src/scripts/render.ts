@@ -17,7 +17,7 @@ interface Animations {
   animate: boolean;
   cloud: THREE.Object3D[];
   earth: THREE.Object3D[];
-  asteroids: THREE.Object3D[];
+  asteroids: { asteroid: THREE.Mesh; y: number; x: number }[];
   moon: THREE.Object3D[];
   lunarEarth: THREE.Object3D[];
   earthOrbit: THREE.Object3D[];
@@ -138,9 +138,25 @@ const animate = (
     });
 
     animations.asteroids.forEach((object, ndx) => {
-      object.rotation.y = timeInSeconds * 0.1 + ndx * 0.05;
-      object.rotation.x = timeInSeconds * 0.1 + ndx * 0.01;
-      object.rotation.z = timeInSeconds * 0.1 - ndx * 0.05;
+      const { asteroid, y, x } = object;
+      asteroid.rotation.y = timeInSeconds * 0.1 + ndx * 0.05;
+      asteroid.rotation.x = timeInSeconds * 0.1 + ndx * 0.01;
+      asteroid.rotation.z = timeInSeconds * 0.1 - ndx * 0.05;
+      const yOff = Math.abs(Math.sin(timeInSeconds * 1 + ndx));
+      asteroid.position.y =
+        y +
+        THREE.MathUtils.lerp(
+          -ndx / animations.asteroids.length,
+          ndx / animations.asteroids.length,
+          yOff
+        );
+      asteroid.position.x =
+        x +
+        THREE.MathUtils.lerp(
+          -ndx / animations.asteroids.length,
+          ndx / animations.asteroids.length,
+          yOff
+        );
     });
 
     animations.functions.forEach((func) => {
@@ -350,7 +366,11 @@ const createAsteroids = (
     });
 
     asteroidOrbit.add(camera);
-    animations.asteroids.push(asteroid);
+    animations.asteroids.push({
+      asteroid,
+      y: asteroid.position.y,
+      x: asteroid.position.x,
+    });
 
     const revertToNormalDisplay = () => {
       // canvas.style.pointerEvents = "all";

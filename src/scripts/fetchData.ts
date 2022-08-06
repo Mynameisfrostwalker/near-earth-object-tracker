@@ -50,15 +50,9 @@ interface Data {
   };
 }
 
-const fetchData = async (
-  start: string,
-  end: string
-): Promise<Data | undefined> => {
+const fetchData = async (url: string): Promise<Data | undefined> => {
   try {
-    const response = await fetch(
-      `https://api.nasa.gov/neo/rest/v1/feed?start_date=${start}&end_date=${end}&api_key=WfcurFXV3fuaxJ147f3BykLubflihVNoKuibPVfy`,
-      { mode: "cors" }
-    );
+    const response = await fetch(url, { mode: "cors" });
     if (response.ok) {
       const data = (await response.json()) as Data;
       return data;
@@ -79,6 +73,8 @@ class DataSorter {
 
   neoArr: AsteroidInfo[] = [];
 
+  dates: string[] = [];
+
   constructor(data: Data) {
     this.elementCount = data.element_count;
     this.neoArr = [];
@@ -88,39 +84,42 @@ class DataSorter {
 
     for (let i = 0; i < keys.length; i += 1) {
       if (keys[i] in neos) {
-        const neo = neos[keys[i]];
+        if (!this.dates.includes(keys[i])) {
+          this.dates.push(keys[i]);
+          const neo = neos[keys[i]];
 
-        for (let j = 0; j < neo.length; j += 1) {
-          const {
-            id,
-            name,
-            absolute_magnitude_h: absoluteMagnitude,
-            is_potentially_hazardous_asteroid: isPotentiallyHazardous,
-          } = neo[j];
-          const { estimated_diameter_max: max, estimated_diameter_min: min } =
-            neo[j].estimated_diameter.kilometers;
-          const {
-            close_approach_date_full: closestApproachDate,
-            relative_velocity: { kilometers_per_second: kms },
-            orbiting_body: orbitingBody,
-          } = neo[j].close_approach_data[0];
-          const distance =
-            neo[j].close_approach_data[0].miss_distance.kilometers;
+          for (let j = 0; j < neo.length; j += 1) {
+            const {
+              id,
+              name,
+              absolute_magnitude_h: absoluteMagnitude,
+              is_potentially_hazardous_asteroid: isPotentiallyHazardous,
+            } = neo[j];
+            const { estimated_diameter_max: max, estimated_diameter_min: min } =
+              neo[j].estimated_diameter.kilometers;
+            const {
+              close_approach_date_full: closestApproachDate,
+              relative_velocity: { kilometers_per_second: kms },
+              orbiting_body: orbitingBody,
+            } = neo[j].close_approach_data[0];
+            const distance =
+              neo[j].close_approach_data[0].miss_distance.kilometers;
 
-          const neoObj: AsteroidInfo = {
-            id,
-            name,
-            absoluteMagnitude,
-            estimatedDiameterMax: max,
-            estimatedDiameterMin: min,
-            potentiallyHazardous: isPotentiallyHazardous,
-            closestApproachDate,
-            relativeVelocity: kms,
-            missDistance: distance,
-            orbitingBody,
-          };
+            const neoObj: AsteroidInfo = {
+              id,
+              name,
+              absoluteMagnitude,
+              estimatedDiameterMax: max,
+              estimatedDiameterMin: min,
+              potentiallyHazardous: isPotentiallyHazardous,
+              closestApproachDate,
+              relativeVelocity: kms,
+              missDistance: distance,
+              orbitingBody,
+            };
 
-          this.neoArr.push(neoObj);
+            this.neoArr.push(neoObj);
+          }
         }
       }
     }
@@ -139,9 +138,19 @@ const retrieveInformation = async () => {
   try {
     const today = format(new Date(), "yyyy-MM-dd");
     const aWeekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
-    const data = await fetchData(aWeekAgo, today);
+    const data = await fetchData(
+      `https://api.nasa.gov/neo/rest/v1/feed?start_date=${aWeekAgo}&end_date=${today}&api_key=WfcurFXV3fuaxJ147f3BykLubflihVNoKuibPVfy`
+    );
     if (data) {
       const information = new DataSorter(data);
+      if (data?.links.next) {
+        const data2 = await fetchData(data?.links.next);
+        if (data2) {
+          const information2 = new DataSorter(data2);
+          information.elementCount += information2.elementCount;
+          information.neoArr = information.neoArr.concat(information2.neoArr);
+        }
+      }
       return information;
     }
   } catch (error) {
