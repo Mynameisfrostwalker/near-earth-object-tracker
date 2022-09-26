@@ -334,12 +334,22 @@ const createAsteroids = (
     const distance = parseFloat(distanceStr);
 
     const geometry = new THREE.IcosahedronGeometry(diameter, 1);
-    const material = new THREE.MeshPhongMaterial({
+    let material = new THREE.MeshPhongMaterial({
       map: texture,
       specular: "white",
       bumpMap: texture2,
       bumpScale: 0.1,
     });
+
+    if (neo.name === "65803 Didymos (1996 GT)") {
+      material = new THREE.MeshPhongMaterial({
+        map: texture,
+        specular: "red",
+        bumpMap: texture2,
+        bumpScale: 0.1,
+      });
+    }
+
     const asteroid = new THREE.Mesh(geometry, material);
     const random = randomPosition(id, baseLog(distance / 10, 13));
     asteroidOrbit.position.set(random.x, random.y, random.z);

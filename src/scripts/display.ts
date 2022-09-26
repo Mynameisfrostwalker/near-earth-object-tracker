@@ -114,7 +114,7 @@ const displayDiv2Info = (asteroidInfo: AsteroidInfo) => {
   minDiameterDiv.classList.add("minDiameterDiv");
   minDiameterDiv.textContent = `Minimum estimated diameter: ${(
     parseFloat(asteroidInfo.estimatedDiameterMin.toString()) * 1000
-  ).toFixed(2)} m`;
+  ).toFixed(2)} km / 1000`;
   div2.appendChild(minDiameterDiv);
 
   const orbitingBodyDiv = document.createElement("div");
