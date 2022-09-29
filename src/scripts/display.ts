@@ -114,7 +114,7 @@ const displayDiv2Info = (asteroidInfo: AsteroidInfo) => {
   minDiameterDiv.classList.add("minDiameterDiv");
   minDiameterDiv.textContent = `Minimum estimated diameter: ${(
     parseFloat(asteroidInfo.estimatedDiameterMin.toString()) * 1000
-  ).toFixed(2)} km / 1000`;
+  ).toFixed(2)} m`;
   div2.appendChild(minDiameterDiv);
 
   const orbitingBodyDiv = document.createElement("div");
@@ -192,7 +192,7 @@ const displayDiv4Info = (asteroidInfo: AsteroidInfo) => {
   missDistanceDiv.classList.add("missDistanceDiv");
   missDistanceDiv.textContent = `Miss distance: ${(
     parseFloat(asteroidInfo.missDistance) / 1000
-  ).toFixed(2)} m`;
+  ).toFixed(2)} km / 1000`;
   div4.appendChild(missDistanceDiv);
 
   return div4;
